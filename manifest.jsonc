@@ -2,20 +2,17 @@
 // The installer reads this file and derives config fragments and permission
 // rules from it. Keep it in sync with the actual directories.
 //
-// Paths are relative to the repository root (where this file lives).
+// Paths are relative to the repository root (where this file lives). The
+// canonical repository (https://github.com/MarcosFP812/laya-agent) is cloned
+// ONCE per machine into ~/.config/opencode/skills/laya — OpenCode's built-in
+// global skills source. No "skills" config entry is ever written.
 {
   "agent": {
     "id": "laya",
     "template": "laya/references/agent-template.md"
   },
   "tokenFile": "~/.config/opencode/laya-token",
-
-  // The whole repository is registered as ONE OpenCode skill source
-  // ("skills": ["<repo>"]). The directory layout below IS the discovery
-  // mechanism:
-  //   laya/SKILL.md                    → installer skill, ID "laya"
-  //   laya-skills/laya-<id>/SKILL.md   → laya-only skill, ID "laya-<id>"
-  //   skills/<id>/SKILL.md             → shared skill, ID "<id>"
+  "globalClone": "~/.config/opencode/skills/laya",
 
   // MCP servers. scope "laya": usable only by the laya agent (a deny rule is
   // added for everyone else). scope "todos": visible to every agent, and the
@@ -24,7 +21,10 @@
     "coltex": {
       "scope": "laya",
       "toolPattern": "coltex_*",
-      "endpointPath": "/api/mcp"
+      "endpointPath": "/api/mcp",
+      // Required: with Code Mode (the default) MCP tools are reachable only
+      // through the `execute` catalog, which a deny-all agent cannot use.
+      "codemode": false
     }
   },
 

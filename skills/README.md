@@ -10,5 +10,6 @@ Conventions:
 - One skill per directory: `<skill-id>/SKILL.md`.
 - The skill ID is the directory name and must **not** start with `laya-`
   (that prefix is reserved for `../laya-skills/`).
-- No extra config needed: the repository root is registered as a single
-  skill source, and this directory is part of it.
+- No extra config needed: the canonical repository is cloned into the global
+  skills directory (`~/.config/opencode/skills/laya`), which OpenCode scans
+  automatically.

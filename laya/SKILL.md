@@ -4,8 +4,9 @@ description: >-
   Install, update, or remove the "laya" OpenCode agent: a ColTex-only agent
   wired to the group's ColTex MCP server plus its laya-* skills. Asks for the
   server URL and the bot token, writes the agent file and MCP config (project
-  or global), verifies everything, and requests an OpenCode restart. Also
-  handles adding new MCP servers or skills declared in manifest.jsonc.
+  or global), verifies everything, cleans up after itself, and requests an
+  OpenCode restart. Also handles adding new MCP servers or skills declared in
+  manifest.jsonc.
 metadata:
   opencode/autoinvoke: false
 ---
@@ -27,6 +28,20 @@ configuration file.
   file (`~/.config/opencode/laya-token`). Never put it in a repository, in an
   `opencode.json(c)`, in command output files, or in this repo. The config
   references it through `{file:...}` substitution.
+- **Never touch the target project's git.** No `git init`, `git clone`,
+  `git add`, `git commit`, `git push`, `git remote`, or any other git write
+  command against the target project. The only git operation in this skill is
+  cloning/updating this repository into the global skills directory.
+- **Create nothing in the target project outside `.opencode/`.** The complete
+  footprint in a project install is exactly two files:
+  `.opencode/agents/laya.md` and `.opencode/opencode.jsonc`. Never copy or
+  clone this repository into the target project, never write manifest,
+  templates, scripts, or skills there. Skills live in the global skills
+  directory (Phase 2.0), which OpenCode discovers automatically — no `skills`
+  config entry is ever written.
+- **Phase 5 (cleanup) is mandatory**, not optional. The installer leaves
+  nothing behind except the two files above (plus the token file and the
+  global clone, both outside any project).
 - **Never restart the OpenCode service from inside your own session** — it
   would kill you mid-task. The restart is the user's step (Phase 3).
 - This skill is **idempotent**: re-running it updates existing files instead
@@ -37,10 +52,17 @@ configuration file.
 
 ## Where things live
 
-As a directory-form skill, your base directory is `<repo>/laya` (the
-directory containing this file). The repository root is its parent:
+| Path | Purpose |
+| --- | --- |
+| `~/.config/opencode/skills/laya/` | Global clone of this repository — OpenCode's built-in global skills source discovers everything in it |
+| `~/.config/opencode/laya-token` | The bot token (the only place a secret exists) |
+| `<project>/.opencode/agents/laya.md` | The agent (project install) |
+| `<project>/.opencode/opencode.jsonc` | MCP + permissions (project install) |
+| `~/.config/opencode/agents/laya.md`, `~/.config/opencode/opencode.json(c)` | Same two files for a global install |
 
-| Path (relative to the repo root) | Purpose |
+Inside this repository (wherever the copy you are reading lives):
+
+| Path | Purpose |
 | --- | --- |
 | `manifest.jsonc` | Source of truth: which resources exist and their scope (`laya` or `todos`) |
 | `laya/references/agent-template.md` | The agent file template (`{{COLTEX_BASE_URL}}` placeholder) |
@@ -51,9 +73,10 @@ directory containing this file). The repository root is its parent:
 | `laya-skills/` | Skills **only for laya** (directory IDs must start with `laya-`) |
 | `skills/` | Skills **for every agent** (directory IDs must not start with `laya-`) |
 
-Resolve the repo root from your base directory (its parent). If you were
-asked to follow this file after reading it directly (not loaded as a skill),
-ask the user for the repo path instead of guessing.
+Resolve repo-relative paths from your own base directory (`<repo>/laya`, the
+directory containing this file). If you were asked to follow this file after
+reading it directly (not loaded as a skill), ask the user for the repo path
+instead of guessing.
 
 ## Phase 0 — Preflight
 
@@ -66,16 +89,22 @@ ask the user for the repo path instead of guessing.
      `~/.config/opencode/opencode.json(c)`.
    - If found, tell the user you will **update** (merge, with backup), not
      reinstall from scratch.
-3. Read `<repo>/manifest.jsonc`. Derive: server names + tool patterns + skill
-   group prefixes. Do not hardcode them from memory; the manifest rules.
+3. Check the global clone: does `~/.config/opencode/skills/laya/manifest.jsonc`
+   exist? Remember the answer — Phase 2.0 creates or updates it.
+4. Read `manifest.jsonc` (from the copy you are executing). Derive: server
+   names + tool patterns + skill group prefixes. Do not hardcode them from
+   memory; the manifest rules.
 
 ## Phase 1 — Ask the user
 
 Use the interactive question tool. Ask exactly these, in order:
 
 1. **ColTex server base URL** — e.g. `http://<host>:<port>`. Validate it looks
-   like `http(s)://host[:port]`. The MCP endpoint is `<base>/api/mcp`.
+   like `http(s)://host[:port]`. The MCP endpoint is `<base>/api/mcp`. If the
+   user already supplied a URL in their request, validate it instead of
+   re-asking.
 2. **Bot token** — free text, must start with `coltex_` and be non-empty.
+   Same rule: skip the question if the user already supplied one.
 3. **Scope** — `project (this repository)` or `global (all projects)`. Show
    the resolved target paths before confirming.
 
@@ -92,6 +121,16 @@ probe fails.
 ## Phase 2 — Write the files
 
 Order matters; do them in this sequence.
+
+### 2.0 Global skill source
+
+- If `~/.config/opencode/skills/laya` does not exist:
+  `git clone https://github.com/MarcosFP812/laya-agent "$env:USERPROFILE/.config/opencode/skills/laya"`
+  (POSIX: `git clone https://github.com/MarcosFP812/laya-agent ~/.config/opencode/skills/laya`).
+- If it exists: `git -C ~/.config/opencode/skills/laya pull` to update it.
+- If the clone/pull fails (no network, private repo, no credentials), report
+  and ask the user how to proceed — never fall back to copying files into
+  the target project.
 
 ### 2.1 Token file
 
@@ -113,24 +152,22 @@ without saying so.
 
 ### 2.3 Config merge
 
-Build a fragment file in a temporary directory (never inside this repo) with
-`mcp`, `permissions`, and `skills` keys, derived from the manifest:
+Build a fragment file in a temporary directory (never inside this repo or the
+target project) with `mcp` and `permissions` keys, derived from the manifest:
 
 - `mcp.servers.<name>` for every manifest MCP server: `type: "remote"`,
-  `url: "<base>/api/mcp"`, `oauth: false`, and
+  `url: "<base>/api/mcp"`, `oauth: false`, **`codemode: false`** (required —
+  with Code Mode active the tools live behind the `execute` catalog and a
+  deny-all agent like laya can never reach them), and
   `headers: { "Authorization": "Bearer {file:~/.config/opencode/laya-token}" }`
   (one server today: `coltex`).
 - `permissions` deny rules for every **laya-scoped** server tool pattern
   (`coltex_*`) and for the laya-only skill ID prefix (`skill` /
   `resource: "laya-*"`). Shared resources get **no** deny rule.
-- `skills` array: exactly one entry — the repo root itself. One source
-  discovers the installer (`laya/SKILL.md`), every laya-only skill
-  (`laya-skills/laya-*/SKILL.md`), and every shared skill
-  (`skills/*/SKILL.md`). Use an absolute path with forward slashes. If the
-  repo is not locally reachable (e.g. the user only has a git URL), skip the
-  entry and say so in the report.
+- **No `skills` key.** The global clone from 2.0 is a built-in discovery
+  source; adding a `skills` entry is a contract violation.
 
-Then run:
+See `references/config-fragment.jsonc` for the annotated example. Then run:
 
 ```
 node <repo>/laya/scripts/merge-config.mjs merge --config <target-config> --fragment <fragment>
@@ -161,8 +198,10 @@ result, and the backup paths. Then tell the user, verbatim in spirit:
 > session). Afterwards, follow `laya/references/verification.md` or ask any
 > agent to run the post-restart checks.
 
-Also recommend committing `.opencode/` in project scope (it contains no
-secrets) so teammates inherit the setup by cloning.
+If the target project is a git repository, recommend committing `.opencode/`
+(it contains no secrets) so teammates inherit the setup by cloning; each
+teammate still needs their own token file, which the installer creates on
+first run.
 
 ## Phase 4 — Post-restart verification (fresh session)
 
@@ -173,6 +212,20 @@ Follow `references/verification.md`. Summary of its gates:
 3. Isolation: from another agent (e.g. `build`), no `coltex_*` tool appears.
 4. `laya-selftest` (the temporary test skill) loads and runs end-to-end.
 
+## Phase 5 — Cleanup (mandatory, the final step)
+
+1. Delete every temporary file you created during the install (fragment
+   files, probe outputs, anything in temp directories).
+2. List the target project's contents and verify that the only new entries
+   are `.opencode/agents/laya.md` and `.opencode/opencode.jsonc` (plus the
+   pre-existing files that were already there).
+3. If you find anything else this install created — a clone, copied files,
+   a `manifest.jsonc`, `.gitattributes`, a `skills/` or `laya-skills/`
+   directory in the project, an extra git history — remove it now and say so
+   in the report. Restore any pre-existing file you accidentally overwrote
+   from git before touching anything.
+4. Report what the cleanup removed.
+
 ## Troubleshooting
 
 | Symptom | Likely cause | Action |
@@ -180,26 +233,27 @@ Follow `references/verification.md`. Summary of its gates:
 | `mcp list` shows `coltex` missing | Config not reloaded | Restart OpenCode; re-check |
 | `needs authentication` | `{file:...}` did not resolve | Token file missing/empty or path typo; recreate it |
 | 401 from the probe | Wrong or revoked token | Re-run Phase 1 with a fresh token |
-| Timeout from the probe | Wrong URL, server down, VPN off | Check the server; re-probe |
-| Tools invisible to laya under Code Mode | Permission pattern vs Code Mode edge case | Set `codemode: false` on the server entry, restart, re-test |
+| Timeout / ConnectionRefused from the probe | Wrong URL, server down, VPN off | Check the server; re-probe |
+| Tools invisible to laya (calls fall through to the skill loader) | `codemode: false` missing from the server entry | Re-add it (Phase 2.3), restart, re-test |
 | Everything reachable but tools deny | Rules ordering broken | Global/project deny rules must precede agent allow rules; re-run the merge |
-| Skills not discovered | Wrong `skills` entry | It must be the repo root (the directory containing `manifest.jsonc`), not a subdirectory |
+| Skills not discovered | Global clone missing | Re-run Phase 2.0; check `~/.config/opencode/skills/laya` |
 
 ## Uninstalling
 
 Run `node <repo>/laya/scripts/merge-config.mjs remove --config <target> --fragment <fragment>`
 with the same fragment used during install (it removes the MCP server, the
-permission rules, and the skills entry it matches), delete the agent file
-and, only with the user's explicit consent, the token file. Restart OpenCode
-afterwards.
+permission rules, and any keys it matches), delete the agent file and, only
+with the user's explicit consent, the token file. Then run Phase 5 cleanup.
+Restart OpenCode afterwards.
 
 ## Maintenance — adding resources later
 
-- **A new laya-only skill**: create `laya-skills/laya-<id>/SKILL.md` (ID must
-  start with `laya-`). No config change needed — the repo root is already a
-  skill source and the permission pattern already covers it.
+- **A new laya-only skill**: create `laya-skills/laya-<id>/SKILL.md` in the
+  canonical repository, commit and push, then `git -C
+  ~/.config/opencode/skills/laya pull` on each machine. No config change is
+  needed — the permission pattern already covers the `laya-` prefix.
 - **A new shared skill**: create `skills/<id>/SKILL.md` (ID must not start
-  with `laya-`). No config change needed either.
+  with `laya-`), commit, push, pull on the machines. No config change.
 - **A new MCP server**: add it to `manifest.jsonc` with its scope, then
   re-run this installer — it regenerates the fragment and merges. Shared
   servers (`scope: "todos"`) get no deny rule and must be allowed explicitly

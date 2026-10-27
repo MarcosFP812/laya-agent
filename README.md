@@ -21,13 +21,49 @@ agent loads it and follows it to set everything up.
 | [`laya-skills/`](./laya-skills/) | Skills **only** for the laya agent (IDs start with `laya-`) |
 | [`skills/`](./skills/) | Skills for **every** agent (IDs must not start with `laya-`) |
 
+## Where the skills live
+
+The canonical repository is `https://github.com/MarcosFP812/laya-agent`.
+The installer clones it once into OpenCode's built-in global skills
+directory:
+
+```sh
+git clone https://github.com/MarcosFP812/laya-agent ~/.config/opencode/skills/laya
+```
+
+From there OpenCode discovers everything automatically — no `skills` config
+entry is needed in any project:
+
+| Skill | Found at (inside the clone) | Visibility |
+| --- | --- | --- |
+| `laya` (installer) | `laya/SKILL.md` | every agent (it must be runnable before laya exists) |
+| `laya-selftest` … | `laya-skills/<id>/SKILL.md` | denied for everyone except laya |
+| shared skills | `skills/<id>/SKILL.md` | every agent |
+
+Updating skills on a machine is a `git -C ~/.config/opencode/skills/laya
+pull`. This README has no frontmatter description, so it is never advertised
+as a skill — it stays a human-only document.
+
+## What the installer touches in a project
+
+Exactly two files, nothing else — and it cleans up after itself:
+
+```text
+<project>/.opencode/agents/laya.md    # the agent (from the template)
+<project>/.opencode/opencode.jsonc    # MCP + permissions (merge, with backup)
+```
+
+No repository copies, no `manifest.jsonc`, no skills directories, no git
+history changes in the target project. The token lives outside, in
+`~/.config/opencode/laya-token`.
+
 ## Quick start (for an agent)
 
 ```sh
-git clone <this-repo>            # anywhere convenient
+git clone https://github.com/MarcosFP812/laya-agent ~/.config/opencode/skills/laya
 # inside an OpenCode session, then either:
-#   - load the skill by ID after registering it, or
-#   - simply read <repo>/laya/SKILL.md and follow it phase by phase
+#   - load the skill by ID (@laya), or
+#   - read ~/.config/opencode/skills/laya/laya/SKILL.md and follow it
 ```
 
 The installer will ask for:
@@ -36,28 +72,9 @@ The installer will ask for:
 2. the bot's MCP token (`coltex_…`),
 3. the install scope (this project, or global).
 
-It then writes the agent file and the MCP config, verifies the setup, and
-asks you to restart OpenCode. See [`laya/SKILL.md`](./laya/SKILL.md) for the
-full contract.
-
-## Registering the repository as a skill source
-
-One config entry covers everything — the repo root itself:
-
-```jsonc
-{ "skills": ["<repo>"] }
-```
-
-From that single source OpenCode discovers:
-
-| Skill | Found at | Visibility |
-| --- | --- | --- |
-| `laya` (installer) | `laya/SKILL.md` | every agent (it must be runnable before laya exists) |
-| `laya-selftest` … | `laya-skills/<id>/SKILL.md` | denied for everyone except laya |
-| shared skills | `skills/<id>/SKILL.md` | every agent |
-
-This README has no frontmatter description, so it is never advertised as a
-skill — it stays a human-only document.
+It then writes the agent file and the MCP config, verifies the setup, cleans
+up, and asks you to restart OpenCode. See
+[`laya/SKILL.md`](./laya/SKILL.md) for the full contract.
 
 ## Security model
 
@@ -73,9 +90,9 @@ skill — it stays a human-only document.
 
 ## Maintenance
 
-Adding a skill is a single directory plus `SKILL.md` — no config change is
-needed, because the repo root is already the one registered source. New MCP
-servers require a `manifest.jsonc` entry plus one installer re-run.
+Adding a skill is a single directory plus `SKILL.md` in the canonical repo;
+machines pick it up with `git pull`. New MCP servers require a
+`manifest.jsonc` entry plus one installer re-run.
 
 > **Note:** `laya-skills/laya-selftest/` is a temporary pipeline test. Delete
 > it after the first successful installation.

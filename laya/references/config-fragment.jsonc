@@ -1,9 +1,14 @@
-// Annotated example of the fragment the installer merges into the target
-// OpenCode config (project `.opencode/opencode.jsonc` or the global one).
-// Placeholders: <COLTEX_BASE_URL> and <REPO_DIR>.
+// The fragment the installer merges into the target OpenCode config
+// (project `.opencode/opencode.jsonc` or the global one).
+// Placeholder: <COLTEX_BASE_URL>.
 //
 // The token is NEVER written here — the header references the token file
 // through {file:...} substitution, so this fragment stays commit-safe.
+//
+// There is intentionally NO "skills" entry: the skill source is the global
+// clone at ~/.config/opencode/skills/laya, which OpenCode discovers
+// automatically. Nothing from this repository is ever copied into the
+// target project.
 {
   "mcp": {
     "servers": {
@@ -11,6 +16,10 @@
         "type": "remote",
         "url": "<COLTEX_BASE_URL>/api/mcp",
         "oauth": false,
+        // Tools must be plain direct calls (coltex_*). With Code Mode active
+        // (the default) MCP tools live behind the `execute` catalog, which a
+        // deny-all agent like laya can never reach.
+        "codemode": false,
         "headers": {
           "Authorization": "Bearer {file:~/.config/opencode/laya-token}"
         }
@@ -23,9 +32,5 @@
   "permissions": [
     { "action": "coltex_*", "resource": "*", "effect": "deny" },
     { "action": "skill", "resource": "laya-*", "effect": "deny" }
-  ],
-
-  // Skill sources. <REPO_DIR>/laya-skills is added whenever the repository
-  // is locally reachable; <REPO_DIR>/skills only once it contains a skill.
-  "skills": ["<REPO_DIR>/laya-skills"]
+  ]
 }
