@@ -67,20 +67,28 @@ the `coltex_*` MCP tools. What you must know before touching anything:
 - **R8 — submission material**: cover letters / highlights / notes are plain
   `.md` inside `<venue>/submission/` (not compiled); reviewer responses
   (`response.tex`) DO compile. Credentials never live in the project.
-- **R10 — your channels**: (a) structural operations (forks, README,
-  REGISTRO) belong to the git bridge, which needs a **Git-enabled token** —
-  the plain MCP token cannot push; (b) content edits in existing files go
-  **always** through MCP suggestions; (c) main flip + clean compile is
-  always human.
+- **R10 — your channels**: (a) git-side structural operations (creating
+  fork folders, pushing, any file move/delete) are HUMAN steps through the
+  git bridge — your plain MCP token cannot push, and even though new-file
+  `write_file` applies directly, do not use it to create fork folders or
+  their files; (b) content edits in existing files go **always** through
+  MCP suggestions; (c) main flip + clean compile is always human. README
+  and REGISTRO *content* updates are yours via MCP (new files apply
+  directly; edits land as suggestions).
 - **Housekeeping duties**: after any milestone (fork, submission, verdict)
   keep the project `README.md` (lineage, verdicts, evidence SHA256) and the
   shared `REGISTRO · Grupo` project current. The REGISTRO is the only global
   index the group has — one row per paper: identifier (`AREA·surnameYY-short`),
   delivery lineage, dates, verdicts, arXiv ID/DOI, code/data repos.
+  SHA-256 values must come from the user or from an existing record — you
+  cannot compute hashes; never fabricate one.
 - **Datasets and code are never stored in ColTex** (NAS/Zenodo + DOI in the
   README). Figure-generating scripts live inside the delivery when they are
-  simple (.latexmkrc instead of Makefile — MCP treats unknown extensions as
-  binary and cannot read them).
+  simple. Prefer `.latexmkrc` over a Makefile: latexmk auto-loads it without
+  a human invocation — but note the bot cannot read or edit either (MCP
+  treats unknown extensions as binary and neither `read_file` nor `search`
+  sees them), so their content must be supplied verbatim by the human and
+  validated only by compiling.
 
 ## 3. Tool map — the complete surface (15 tools)
 
@@ -126,6 +134,10 @@ names carry the `coltex_` prefix (e.g. `coltex_read_file`).
 2. Propose the **minimal** coherent change with `edit_file` (or `write_file`
    only for genuinely new files). One logical change per suggestion; never
    rewrite a whole file when a paragraph suffices.
+   If `edit_file` reports no match: re-read a wider window, re-check
+   `list_suggestions` (a pending suggestion may have altered the passage),
+   and retry with a smaller snippet — never guess at text you have not
+   re-read.
 3. Respect existing macros, formatting conventions, and label/cite keys —
    reuse, don't reinvent.
 4. Re-read or `search` to confirm the suggestion landed as expected.
@@ -155,8 +167,9 @@ names carry the `coltex_` prefix (e.g. `coltex_read_file`).
    tooling.
 2. Answer one thread at a time with `reply_to_comment`: concrete, in
    Spanish, referencing what you checked.
-3. When a comment implies a text change, propose it as a suggestion and link
-   it in the reply.
+3. When a comment implies a text change, propose it as a suggestion and
+   reference it in the reply by quoting the file and passage and stating
+   that the change is pending as a suggestion.
 4. `resolve_comment` only for threads you actually settled, after saying how.
 
 ## 5. Change-control discipline

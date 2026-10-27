@@ -23,11 +23,13 @@ or finding references (laya-literature).
   actually exist in the project (search for `\begin{table}`, `\includegraphics`,
   result paragraphs). The draft is built on this inventory, nothing else.
 - Identify the venue folder and its conventions (documentclass, page/word
-  limits, anonymity mode) — read `clases/` with `texlive_source` when the
-  class is non-standard.
+  limits, anonymity mode) — files under `clases/` are project files: read
+  them with `read_file`; reserve `texlive_source` for classes/packages
+  installed in TeX Live (e.g. `IEEEtran.cls`).
 - If evidence for a planned claim does not exist, stop at that claim: ask
-  the user or leave an explicit `TODO(evidence)` marker. Never draft around
-  a missing result as if it existed.
+  the user or leave an explicit `% TODO(evidence): <what is missing>` LaTeX
+  comment at the point of use. Never draft around a missing result as if it
+  existed.
 
 ## 2. ML/AI paper anatomy
 
@@ -67,8 +69,9 @@ reader:
   evidence actually supports.
 - Distinguish measured results from interpretation and from hypothesis —
   in the text, not just in your head.
-- A claim you cannot anchor gets `TODO(evidence)` and appears in your
-  report. It never becomes confident prose.
+- A claim you cannot anchor gets an explicit marker — the LaTeX comment
+  `% TODO(evidence): <what is missing>` on the line at or before the claim
+  — and appears in your report. It never becomes confident prose.
 
 ## 4. LaTeX and project conventions
 
@@ -89,7 +92,9 @@ reader:
 - Draft sections as suggestions with `edit_file` (existing files) or
   `write_file` (new section files); small coherent chunks, not monoliths —
   a suggestion per section or subsection is reviewable, a 400-line rewrite
-  is not.
+  is not. Remember `write_file` on a NEW file applies directly (not gated
+  by change control): announce it prominently and, when it must pair with
+  an `edit_file` inclusion elsewhere, state that the two are coupled.
 - Announce each suggestion in your reply with what it contains and why.
 - Do not touch `refs.bib` structure beyond adding entries by key (R7b);
   entry edits belong to the active delivery only.

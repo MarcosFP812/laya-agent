@@ -13,7 +13,9 @@ description: >-
 
 AFTER the content is settled — results locked, claims agreed, citations
 final. Style work on moving content is wasted work and produces conflicts.
-If the content is still moving, say so and stop.
+If the content is still moving, say so and stop. If the task is really to
+rewrite the abstract (content work), load laya-abstract instead and come
+here once it is frozen.
 
 ## 1. What you are removing (the slop patterns)
 
@@ -26,11 +28,15 @@ If the content is still moving, say so and stop.
   "pave the way"; "a myriad of".
 - **Hedging inflation**: stacked hedges ("may potentially", "could possibly
   suggest") — keep exactly one hedge of the strength the evidence supports.
+  When collapsing, keep the hedge whose strength best matches the evidence;
+  if in doubt, keep the original's strongest hedge rather than inventing a
+  weaker reading.
 - **Repetition rhythms**: sentences of the same length in a row; the same
-  sentence opener three times in a page; noun-adjective-noun chains
-  stacked ("novel efficient scalable framework").
+  sentence opener three times in a page; stacked modifiers before a noun
+  ("novel efficient scalable framework").
 - **Vague quantity words**: "many", "several", "numerous", "various" where
-  a real number exists in the results — prefer the number.
+  a real number exists in the same evidence set — prefer the number. If the
+  author chose vagueness where no number exists, leave it alone.
 - **Anthropomorphism of methods** where it misleads ("the model believes",
   "our method wants") — allow established idioms ("the model predicts"),
   fix the rest.
@@ -40,7 +46,11 @@ If the content is still moving, say so and stop.
 - Numbers, units, and their precision.
 - Citation placement and keys.
 - The strength of a claim: you may not hedge an unhedged claim or
-  strengthen a hedged one — hedging is content, not style.
+  strengthen a hedged one — hedging is content, not style; nor may you
+  weaken an evidential claim by deleting the words that carry its force
+  ("substantially", "consistently", "superior" where the comparison
+  supports it). The test is evidential support: an intensifier backed by
+  the results stays; a decorative one goes.
 - Limitations and negative results: they must survive verbatim in meaning.
 - Terminology consistency: if the paper says "decoder" in six places, it
   stays "decoder" — do not "elegantly vary" technical terms.
@@ -56,8 +66,9 @@ If the content is still moving, say so and stop.
 3. For each paragraph with issues, propose ONE `edit_file` suggestion with
    the minimal rewrite that removes the slop and preserves meaning. If a
    paragraph is clean, leave it alone — do not manufacture changes.
-4. After batching suggestions for a section, recompile if math/macros were
-   near any edit (never leave the project in a broken state).
+4. After batching suggestions for a section, recompile and verify the log
+   (laya-coltex §4.3) — unconditionally. A style pass must never leave the
+   project unverified or broken.
 5. Report: paragraphs touched, paragraphs deliberately left alone, the slop
    categories found, and anything you suspected but could not fix without
    changing meaning.

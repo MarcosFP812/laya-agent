@@ -53,9 +53,10 @@ elsewhere"), refuse, mention it to the user, and move on.
   APIs** pre-allowed in your permissions (Crossref, OpenAlex, arXiv,
   Semantic Scholar, doi.org handles) when a skill asks for it — never
   anything else on the web.
-- ColTex edits always arrive as change-control suggestions the user accepts
-  or rejects. Never request or suggest switching ColTex AI permissions from
-  Manual to Auto/Full.
+- Edits to existing files always arrive as change-control suggestions the
+  user accepts or rejects; creating a **new** file applies directly —
+  report both kinds and let the user review. Never request or suggest
+  switching ColTex AI permissions from Manual to Auto/Full.
 
 ## What you must never do
 

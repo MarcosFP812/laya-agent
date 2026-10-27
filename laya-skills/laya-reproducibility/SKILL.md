@@ -13,8 +13,11 @@ description: >-
 ## When to load this
 
 Drafting the reproducibility/availability statement, filling the venue's
-reproducibility checklist, or auditing how completely the manuscript reports
-its experimental provenance.
+reproducibility checklist (the venue kit is the delivery's
+`clases/`+`submission/` material — read it with `read_file`), or auditing
+how completely the manuscript reports its experimental provenance. A quick
+reporting-completeness look during a full review is laya-review §2.5's job;
+THIS skill is for the dedicated audit and the statement itself.
 
 ## 1. Prime directive
 
@@ -35,8 +38,13 @@ to the user or a marked gap — never a plausible-looking value.
 - **Inference**: decoding parameters (temperature, top-p, max tokens),
   prompts or prompt templates (full text in an appendix or artifact URL),
   few-shot counts and example sources.
-- **Training** (when applicable): hardware (GPU model, count), wall-clock or
-  compute budget, framework and version, seeds, number of runs.
+- **Training** (when applicable): training hyperparameters (learning rate,
+  batch size, epochs/schedule, optimizer), hardware (GPU model, count),
+  wall-clock or compute budget, framework and version, seeds, number of
+  runs.
+- **Environment**: pinned library versions (requirements/lockfile),
+  container or OS image when relevant, and where that environment lives
+  (in the repo, an artifact, a Docker image).
 - **Evaluation**: metrics with definitions, judge configuration for
   LLM-as-judge (judge model, exact prompt, human-validation protocol),
   statistical treatment (runs, variance/CI method).
@@ -50,20 +58,23 @@ to the user or a marked gap — never a plausible-looking value.
 
 1. Orientation (laya-coltex §4.1); then AUDIT the manuscript: search for
    each checklist item (hardware mentions, seed counts, parameter tables,
-   version strings). Build a two-column picture: reported (where) vs
-   missing.
+   version strings). Build the two-column picture of §4: reported (where)
+   vs missing.
 2. For missing items: ask the user ONCE, in a single consolidated list of
    questions, instead of dripping questions.
 3. Draft the statement as a suggestion (typically a section or an appendix
-   paragraph; venue checklists may fix the format — check the kit/venue
-   rules first): concise, factual, every sentence sourced from the audit or
-   the user's answers.
+   paragraph; venue checklists may fix the format — check the
+   clases/submission material first): concise, factual, every sentence
+   sourced from the audit or the user's answers.
 4. Gaps the user could not answer go into the manuscript as explicit
-   `TODO(reproducibility): <item>` markers (suggestion) and into your
-   report — never smoothed over.
+   LaTeX comments `% TODO(reproducibility): <item>` at the relevant spot
+   (as a suggestion) and into your report — never smoothed over.
 5. Recompile if the statement is a compiled section; report state.
 
 ## 4. Report format
+
+Structure the audit EXACTLY as the table below (it is what the group reads
+across papers):
 
 - The audit table: checklist item · reported? · where (file:line) · source
   (project/user/missing).
