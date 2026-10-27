@@ -81,7 +81,10 @@ instead of guessing.
 ## Phase 0 — Preflight
 
 1. Run `opencode --version`. If the command fails or the major version is not
-   2, stop and report.
+   2, stop and report. On Windows the npm shim may be blocked by the
+   PowerShell execution policy; retry as `cmd /c opencode --version` before
+   declaring the gate failed — the gate is about the OpenCode version, not
+   the shell.
 2. Detect an existing installation before deciding anything:
    - **Project scope**: `<project>/.opencode/agents/laya.md` and
      `<project>/.opencode/opencode.jsonc` containing `mcp.servers.coltex`.
@@ -231,7 +234,10 @@ Follow `references/verification.md`. Summary of its gates:
 ## Phase 5 — Cleanup (mandatory, the final step)
 
 1. Delete every temporary file you created during the install (fragment
-   files, probe outputs, anything in temp directories).
+   files, probe outputs, anything in temp directories). Do not rely on
+   remembering the names you chose: list every case-insensitive `*laya*`
+   file in the temp directories you used, delete each one, and report the
+   final count — the count in your report must match what you measured.
 2. List the target project's contents and verify that the only new entries
    are `.opencode/agents/laya.md` and `.opencode/opencode.jsonc` (plus the
    pre-existing files that were already there).
