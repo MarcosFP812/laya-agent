@@ -34,7 +34,9 @@ configuration file.
   cloning/updating this repository into the global skills directory.
 - **Create nothing in the target project outside `.opencode/`.** The complete
   footprint in a project install is exactly two files:
-  `.opencode/agents/laya.md` and `.opencode/opencode.jsonc`. Never copy or
+  `.opencode/agents/laya.md` and `.opencode/opencode.jsonc` — plus the merge
+  script's timestamped backup beside the config when that config already
+  existed. Never copy or
   clone this repository into the target project, never write manifest,
   templates, scripts, or skills there. Skills live in the global skills
   directory (Phase 2.0), which OpenCode discovers automatically — no `skills`
@@ -240,7 +242,8 @@ Follow `references/verification.md`. Summary of its gates:
    final count — the count in your report must match what you measured.
 2. List the target project's contents and verify that the only new entries
    are `.opencode/agents/laya.md` and `.opencode/opencode.jsonc` (plus the
-   pre-existing files that were already there).
+   pre-existing files that were already there, and the merge backup if the
+   target config already existed).
 3. If you find anything else this install created — a clone, copied files,
    a `manifest.jsonc`, `.gitattributes`, a `skills/` or `laya-skills/`
    directory in the project, an extra git history — remove it now and say so

@@ -72,6 +72,12 @@ The installer will ask for:
 2. the bot's MCP token (`coltex_…`),
 3. the install scope (this project, or global).
 
+On a machine where the global clone does not exist yet, either run the
+`git clone` above yourself first, or include the canonical repository URL
+in your install request — the installing agent then performs the bootstrap
+itself (Phase 2.0 of the contract) before anything else. Without the clone
+or the URL, an installing agent has no contract to follow and must stop.
+
 It then writes the agent file and the MCP config, verifies the setup, cleans
 up, and asks you to restart OpenCode. See
 [`laya/SKILL.md`](./laya/SKILL.md) for the full contract.
