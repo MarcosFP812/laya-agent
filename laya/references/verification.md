@@ -1,7 +1,8 @@
 # Post-restart verification checklist
 
 Run this in a **fresh OpenCode session** after the installer finishes. Every
-check must pass; if one fails, see the troubleshooting table in `laya.md`.
+check must pass; if one fails, see the troubleshooting table in
+`laya/SKILL.md`.
 
 ## 1. MCP registered
 
@@ -25,14 +26,23 @@ check must pass; if one fails, see the troubleshooting table in `laya.md`.
 
 ## 4. The laya-only skill mechanism works
 
-- As the laya agent, load the `laya-selftest` skill and follow it.
-- Expect: it calls `coltex_list_projects`, reports the result, and reminds
-  you that the skill is temporary.
+- As the laya agent, load the `laya-coltex` skill (it is always installed)
+  and follow its orientation loop on a real project (list_projects →
+  list_files → read the main document).
+- Expect: the skill loads, the loop runs with real data, and laya can also
+  see every other skill that was selected at install time.
 
-## 5. Cleanup
+## 5. Webfetch gate (free scholarly APIs)
 
-- Once checks 1–4 pass, delete `laya-skills/laya-selftest/` from the
-  repository and commit the change.
+- As the laya agent, fetch a real DOI record with `webfetch`, e.g.
+  `https://api.crossref.org/works/10.1145/3442188.3445922`.
+- Expect: HTTP 200 and JSON containing the paper's title.
+- If the install used the manifest's domain-scoped rules, also confirm that
+  a URL outside the allowlist (e.g. `https://example.com`) is **refused** —
+  laya's web access is API-only by design.
+- If the scoped rules do not work in your OpenCode build (the fetch is
+  blocked despite the allow rule), see the troubleshooting table: fall back
+  to a single unscoped `webfetch` allow and say so in the install report.
 
 ## Optional CLI check
 

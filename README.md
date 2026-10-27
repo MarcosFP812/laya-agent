@@ -18,7 +18,7 @@ agent loads it and follows it to set everything up.
 | [`laya/references/verification.md`](./laya/references/verification.md) | Post-restart verification checklist |
 | [`laya/scripts/merge-config.mjs`](./laya/scripts/merge-config.mjs) | JSONC-tolerant merge/remove/verify for OpenCode configs (backup included) |
 | [`laya/scripts/probe-mcp.mjs`](./laya/scripts/probe-mcp.mjs) | Functional probe of a ColTex MCP endpoint |
-| [`laya-skills/`](./laya-skills/) | Skills **only** for the laya agent (IDs start with `laya-`) |
+| [`laya-skills/`](./laya-skills/) | Skills **only** for the laya agent (IDs start with `laya-`; catalog and install mode in the manifest) |
 | [`skills/`](./skills/) | Skills for **every** agent (IDs must not start with `laya-`) |
 
 ## Where the skills live
@@ -37,12 +37,39 @@ entry is needed in any project:
 | Skill | Found at (inside the clone) | Visibility |
 | --- | --- | --- |
 | `laya` (installer) | `laya/SKILL.md` | every agent (it must be runnable before laya exists) |
-| `laya-selftest` … | `laya-skills/<id>/SKILL.md` | denied for everyone except laya |
+| `laya-coltex`, `laya-paper-craft`, … | `laya-skills/<id>/SKILL.md` | denied for everyone except laya |
 | shared skills | `skills/<id>/SKILL.md` | every agent |
+
+Laya-only skills are selected at install time: the installer asks yes/no for
+every optional skill and generates an explicit allow rule per selected skill
+inside the agent file. A skill that stays on disk but was not selected
+remains invisible to laya.
 
 Updating skills on a machine is a `git -C ~/.config/opencode/skills/laya
 pull`. This README has no frontmatter description, so it is never advertised
 as a skill — it stays a human-only document.
+
+## The laya skills
+
+The agent's methodology lives in its skills (all self-contained single
+`SKILL.md` files, in English). The catalog — descriptions and install mode —
+is `manifest.jsonc` → `layaSkills`:
+
+| Skill | Purpose | Install |
+| --- | --- | --- |
+| `laya-coltex` | Operating manual for the ColTex MCP: tool map, orientation/edit/compile/comment loops, change control, the group's paper architecture (R1–R12), integrity rules | always |
+| `laya-paper-craft` | Draft/restructure sections with ML conventions; claims bound to evidence | ask |
+| `laya-review` | Adversarial pre-submission review, severity-classified, LLM-eval pitfalls | ask |
+| `laya-style` | De-slop polish that never touches numbers, claims or limitations | ask |
+| `laya-citation-checks` | Bib hygiene + metadata verification against free APIs (Crossref/OpenAlex/arXiv) | ask |
+| `laya-literature` | Related-work search and mapping via free APIs, with provenance | ask |
+| `laya-figures` | Publication figures as pgfplots compiled by ColTex | ask |
+| `laya-abstract` | Titles, abstracts and keywords within budgets, claims matching results | ask |
+| `laya-reproducibility` | Reproducibility statements from user-provided facts only | ask |
+
+External data comes only from free, key-less scholarly APIs; the allowed
+domains live in `manifest.jsonc` → `webfetchAllow` and become the agent's
+only webfetch permissions. Everything else about laya stays deny-all.
 
 ## What the installer touches in a project
 
@@ -70,7 +97,10 @@ The installer will ask for:
 
 1. the ColTex server base URL,
 2. the bot's MCP token (`coltex_…`),
-3. the install scope (this project, or global).
+3. the install scope (this project, or global),
+4. yes/no for each optional laya skill (one question per skill; the catalog
+   and which skills are optional live in `manifest.jsonc` — the core
+   `laya-coltex` skill is always installed and never asked).
 
 On a machine where the global clone does not exist yet, either run the
 `git clone` above yourself first, or include the canonical repository URL
@@ -89,18 +119,21 @@ up, and asks you to restart OpenCode. See
   `{file:...}` substitution. Safe to commit; safe to share.
 - **Visibility is enforced by permissions**, not conventions alone:
   ColTex MCP tools (`coltex_*`) and `laya-*` skills are denied for every
-  agent, and the `laya` agent's own rules re-allow them. Other agents never
-  see them. The installer also writes a global `laya-*` skill deny, so the
-  globally cloned laya-only skills stay hidden even in projects without a
-  laya config.
+  agent, and the `laya` agent's own rules re-allow them (per selected
+  skill). Other agents never see them. The installer also writes a global
+  `laya-*` skill deny, so the globally cloned laya-only skills stay hidden
+  even in projects without a laya config.
+- **Laya's web access is API-scoped**: the agent file allows `webfetch` only
+  to the free key-less scholarly API domains in the manifest; every other
+  URL is denied by the agent's own rules. The domain-scoped behavior is part
+  of the post-restart verification (gate 5).
 - The example URLs in this repo are placeholders. Ask the group for the real
   server address.
 
 ## Maintenance
 
-Adding a skill is a single directory plus `SKILL.md` in the canonical repo;
-machines pick it up with `git pull`. New MCP servers require a
-`manifest.jsonc` entry plus one installer re-run.
-
-> **Note:** `laya-skills/laya-selftest/` is a temporary pipeline test. Delete
-> it after the first successful installation.
+Adding a skill is a directory plus a self-contained `SKILL.md` in
+`laya-skills/` **and** its `layaSkills` entry in `manifest.jsonc`; machines
+pick it up with `git pull`, and existing installs gain it by re-running the
+installer (which regenerates the agent's allow rules). New MCP servers
+require a `manifest.jsonc` entry plus one installer re-run.

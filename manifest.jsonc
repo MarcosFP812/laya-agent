@@ -1,6 +1,7 @@
 // Source of truth for every resource this repository manages.
-// The installer reads this file and derives config fragments and permission
-// rules from it. Keep it in sync with the actual directories.
+// The installer reads this file and derives config fragments, the agent
+// file's allow rules and the skill-selection questions from it. Keep it in
+// sync with the actual directories.
 //
 // Paths are relative to the repository root (where this file lives). The
 // canonical repository (https://github.com/MarcosFP812/laya-agent) is cloned
@@ -28,10 +29,80 @@
     }
   },
 
+  // Outbound web access for the laya agent: free, key-less scholarly APIs
+  // ONLY (no account, no key, no paywall). The installer generates one
+  // webfetch allow rule per entry into the agent file ({{WEBFETCH_ALLOWS}});
+  // every other URL stays denied by the agent's deny-all. Never add a domain
+  // that requires a key, an account, or payment.
+  "webfetchAllow": [
+    "https://api.crossref.org/*",
+    "https://api.openalex.org/*",
+    "https://export.arxiv.org/*",
+    "http://export.arxiv.org/*",
+    "https://api.semanticscholar.org/*",
+    "https://doi.org/api/*"
+  ],
+
   // Skill groups. Members must honour the idPrefix (the installer validates
   // this and fails loudly on violation).
   "skillGroups": {
     "layaOnly": { "directory": "laya-skills", "idPrefix": "laya-" },
     "shared": { "directory": "skills", "idPrefix": "" }
+  },
+
+  // Catalog of laya-only skills (every directory in laya-skills/ must have
+  // exactly one entry here, and vice versa — the installer validates this).
+  //   install: "always" — installed on every install, never asked.
+  //   install: "ask"    — the installer asks yes/no for it (one question per
+  //                       skill, in this order). The user's answer becomes a
+  //                       per-skill allow rule in the agent file; unselected
+  //                       skills stay on disk (so `git pull` keeps working)
+  //                       but remain invisible to laya until a re-run.
+  "layaSkills": {
+    "laya-coltex": {
+      "install": "always",
+      "title": "ColTex operations",
+      "summary": "How to operate the ColTex MCP: tool map, reading/edit/compile loops, change control, the group's paper architecture and integrity rules."
+    },
+    "laya-paper-craft": {
+      "install": "ask",
+      "title": "Paper drafting",
+      "summary": "Draft and restructure manuscript sections (ML/AI conventions): contributions, claims-evidence binding, related-work synthesis, LaTeX conventions."
+    },
+    "laya-review": {
+      "install": "ask",
+      "title": "Critical review",
+      "summary": "Adversarial pre-submission review: severity-classified findings, LLM-evaluation pitfalls, statistics, reproducibility and overclaiming checks."
+    },
+    "laya-style": {
+      "install": "ask",
+      "title": "Style polish",
+      "summary": "Remove AI-slop and weak phrasing from finished text without touching results, claims, citations or limitations."
+    },
+    "laya-citation-checks": {
+      "install": "ask",
+      "title": "Citation hygiene and verification",
+      "summary": "Offline bib hygiene (duplicate keys, broken refs) plus metadata verification against free key-less APIs (Crossref, OpenAlex, arXiv)."
+    },
+    "laya-literature": {
+      "install": "ask",
+      "title": "Literature search",
+      "summary": "Search and map related work via free APIs (arXiv, OpenAlex, Crossref): comparison tables, thematic clusters, gap statements."
+    },
+    "laya-figures": {
+      "install": "ask",
+      "title": "Scientific figures with pgfplots",
+      "summary": "Publication-quality figures as TikZ/pgfplots code compiled by ColTex: curves, bars, error bars, standardized styling."
+    },
+    "laya-abstract": {
+      "install": "ask",
+      "title": "Abstract and title",
+      "summary": "Craft titles, abstracts and keywords within word budgets, with claims that match the actual results."
+    },
+    "laya-reproducibility": {
+      "install": "ask",
+      "title": "Reproducibility statement",
+      "summary": "Draft reproducibility statements and report gaps from facts the researcher provides; never invents numbers."
+    }
   }
 }
