@@ -1,13 +1,13 @@
 ---
 name: Laya Agent Installer
 description: >-
-  Install, update, or remove the "laya" OpenCode agent: a ColTex-only agent
-  wired to the group's ColTex MCP server plus its laya-* skills and a
-  domain-scoped webfetch to free scholarly APIs. Asks for the server URL and
-  the bot token, asks which laya-* skills to install (one question per
-  skill), writes the agent file and MCP config (project or global), verifies
-  everything, cleans up after itself, and requests an OpenCode restart. Also
-  handles adding new MCP servers or skills declared in manifest.jsonc.
+  Install, update, or remove the "laya" OpenCode agent: a full OpenCode
+  agent (native toolset) wired to the group's ColTex MCP server plus its
+  laya-* skills. Asks for the server URL and the bot token, asks which
+  laya-* skills to install (one question per skill), writes the agent file
+  and MCP config (project or global), verifies everything, cleans up after
+  itself, and requests an OpenCode restart. Also handles adding new MCP
+  servers or skills declared in manifest.jsonc.
 metadata:
   opencode/autoinvoke: false
 ---
@@ -16,11 +16,13 @@ metadata:
 
 ## Mission
 
-Set up an OpenCode agent named **laya** whose only capabilities are the
-group's ColTex MCP server, `webfetch` restricted to the free key-less
-scholarly APIs declared in the manifest, and skills whose ID starts with
-`laya-` (selected at install time). The setup must be reproducible,
-idempotent, and free of secrets inside any repository or configuration file.
+Set up an OpenCode agent named **laya**: a full OpenCode agent (native
+toolset, unrestricted web) wired to the group's ColTex MCP server and to
+skills whose ID starts with `laya-` (selected at install time). ColTex
+tools and laya-* skills stay exclusive to laya — everyone else is denied by
+config rules the agent file re-allows for itself. The setup must be
+reproducible, idempotent, and free of secrets inside any repository or
+configuration file.
 
 ## Hard rules — read before doing anything
 
@@ -68,8 +70,8 @@ Inside this repository (wherever the copy you are reading lives):
 
 | Path | Purpose |
 | --- | --- |
-| `manifest.jsonc` | Source of truth: MCP servers + scopes, the `webfetchAllow` domain list, and the `layaSkills` catalog (id, title, summary, install mode) |
-| `laya/references/agent-template.md` | The agent file template (`{{COLTEX_BASE_URL}}`, `{{WEBFETCH_ALLOWS}}`, `{{SKILL_ALLOWS}}` placeholders) |
+| `manifest.jsonc` | Source of truth: MCP servers + scopes and the `layaSkills` catalog (id, title, summary, install mode) |
+| `laya/references/agent-template.md` | The agent file template (`{{COLTEX_BASE_URL}}`, `{{SKILL_ALLOWS}}` placeholders) |
 | `laya/references/config-fragment.jsonc` | Annotated example of what gets merged into the config |
 | `laya/references/verification.md` | Post-restart checklist (standalone, followable in a fresh session) |
 | `laya/scripts/merge-config.mjs` | JSONC-tolerant merge/remove/verify for OpenCode config files |
@@ -99,10 +101,9 @@ instead of guessing.
 3. Check the global clone: does `~/.config/opencode/skills/laya/manifest.jsonc`
    exist? Remember the answer — Phase 2.0 creates or updates it.
 4. Read `manifest.jsonc` (from the copy you are executing). Derive: server
-   names + tool patterns + skill group prefixes, the `layaSkills` catalog
-   (which skills are `"always"` and which are `"ask"`), and the
-   `webfetchAllow` domain list. Do not hardcode any of it from memory; the
-   manifest rules.
+   names + tool patterns + skill group prefixes and the `layaSkills` catalog
+   (which skills are `"always"` and which are `"ask"`). Do not hardcode any
+   of it from memory; the manifest rules.
 5. Validate the skill catalog against the directories: every directory in
    `laya-skills/` must have exactly one `layaSkills` entry (and vice versa),
    and every `"always"` skill's directory must exist. On a mismatch, **stop
@@ -170,8 +171,6 @@ Write the token to `~/.config/opencode/laya-token`:
 Copy `<repo>/laya/references/agent-template.md`, replacing:
 
 - `{{COLTEX_BASE_URL}}` with the base URL from Phase 1;
-- `{{WEBFETCH_ALLOWS}}` with one allow rule per manifest `webfetchAllow`
-  entry, in manifest order;
 - `{{SKILL_ALLOWS}}` with one allow rule per selected skill (`"always"`
   skills plus the ones the user accepted), in manifest order.
 
@@ -183,7 +182,7 @@ Every expanded rule has exactly this shape (two-space indent):
     effect: allow
 ```
 
-If a list is empty, delete the placeholder line entirely. Change nothing
+If the skill list is empty, delete the placeholder line entirely. Change nothing
 else without saying so. Verify the result is the template with exactly these
 substitutions — generate a temporary copy programmatically and diff it
 against the written file; do not compare by eye.
@@ -194,9 +193,10 @@ Build a fragment file in a temporary directory (never inside this repo or the
 target project) with `mcp` and `permissions` keys, derived from the manifest:
 
 - `mcp.servers.<name>` for every manifest MCP server: `type: "remote"`,
-  `url: "<base>/api/mcp"`, `oauth: false`, **`codemode: false`** (required —
-  with Code Mode active the tools live behind the `execute` catalog and a
-  deny-all agent like laya can never reach them), and
+  `url: "<base>/api/mcp"`, `oauth: false`, **`codemode: false`** (keeps the
+  tools as direct calls, matching the direct-call loop the laya-coltex
+  manual documents; with Code Mode they would live behind the `execute`
+  catalog instead), and
   `headers: { "Authorization": "Bearer {file:~/.config/opencode/laya-token}" }`
   (one server today: `coltex`).
 - `permissions` deny rules for every **laya-scoped** server tool pattern
@@ -266,9 +266,9 @@ Follow `references/verification.md`. Summary of its gates:
 3. Isolation: from another agent (e.g. `build`), no `coltex_*` tool appears.
 4. The `laya-coltex` skill (always installed) loads and runs its orientation
    loop as laya; every skill selected in Phase 1 is also visible to laya.
-5. Webfetch gate: as laya, a Crossref DOI fetch returns HTTP 200; a URL
-   outside the manifest's `webfetchAllow` list is refused (domain-scoped
-   installs).
+5. Native toolset: as laya, a trivial shell command (e.g. `echo ok`)
+   succeeds and a `webfetch` to any URL (e.g. `https://example.com`)
+   proceeds normally — laya is a full agent with no web scoping.
 
 ## Phase 5 — Cleanup (mandatory, the final step)
 
@@ -300,8 +300,7 @@ Follow `references/verification.md`. Summary of its gates:
 | Everything reachable but tools deny | Rules ordering broken | Global/project deny rules must precede agent allow rules; re-run the merge |
 | Skills not discovered | Global clone missing | Re-run Phase 2.0; check `~/.config/opencode/skills/laya` |
 | A known skill invisible to laya | Skill exists but was not selected at install time (no allow rule) | Re-run the installer and select it, or confirm the selection |
-| Laya cannot webfetch an allowed API | Domain-scoped allow not honored by this OpenCode build | Re-run 2.2 generating a single unscoped `webfetch` allow rule instead; document the change in the install report |
-| Laya can webfetch arbitrary URLs | A fallback unscoped allow rule is installed | Expected only after the documented fallback; never re-scope without updating `webfetchAllow` |
+| Native tools missing in laya (no shell/read/webfetch) | A stale deny-all rule left in the agent file | Regenerate `laya.md` from the current template (re-run the installer), restart, re-test |
 
 ## Uninstalling
 
@@ -324,5 +323,6 @@ Restart OpenCode afterwards.
   with `laya-`), commit, push, pull on the machines. No config change.
 - **A new MCP server**: add it to `manifest.jsonc` with its scope, then
   re-run this installer — it regenerates the fragment and merges. Shared
-  servers (`scope: "todos"`) get no deny rule and must be allowed explicitly
-  in the laya agent file (extend `laya/references/agent-template.md`).
+  servers (`scope: "todos"`) get no deny rule and are visible to laya like
+  to every other agent; laya-scoped ones get a deny rule the laya agent
+  file re-allows.

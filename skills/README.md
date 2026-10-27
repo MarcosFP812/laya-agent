@@ -1,9 +1,7 @@
 # skills/ — shared skills
 
-Skills in this directory are visible to **every** OpenCode agent. The laya
-agent does not see them unless a `todos`-scoped allow rule is added for them
-in its definition (its own deny-all hides everything not explicitly
-re-allowed).
+Skills in this directory are visible to **every** OpenCode agent, laya
+included — laya is a full OpenCode agent with nothing scoped away.
 
 Conventions:
 

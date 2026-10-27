@@ -16,32 +16,20 @@
   "globalClone": "~/.config/opencode/skills/laya",
 
   // MCP servers. scope "laya": usable only by the laya agent (a deny rule is
-  // added for everyone else). scope "todos": visible to every agent, and the
-  // laya agent gets an explicit allow rule (its deny-all would hide it).
+  // added for everyone else; the laya agent file re-allows it).
+  // scope "todos": visible to every agent, laya included.
   "mcpServers": {
     "coltex": {
       "scope": "laya",
       "toolPattern": "coltex_*",
       "endpointPath": "/api/mcp",
-      // Required: with Code Mode (the default) MCP tools are reachable only
-      // through the `execute` catalog, which a deny-all agent cannot use.
+      // Keeps the tools as plain direct calls (coltex_*), matching the
+      // direct-call loop the laya-coltex operating manual documents. With
+      // Code Mode (the default) they would live behind the `execute`
+      // catalog instead.
       "codemode": false
     }
   },
-
-  // Outbound web access for the laya agent: free, key-less scholarly APIs
-  // ONLY (no account, no key, no paywall). The installer generates one
-  // webfetch allow rule per entry into the agent file ({{WEBFETCH_ALLOWS}});
-  // every other URL stays denied by the agent's deny-all. Never add a domain
-  // that requires a key, an account, or payment.
-  "webfetchAllow": [
-    "https://api.crossref.org/*",
-    "https://api.openalex.org/*",
-    "https://export.arxiv.org/*",
-    "http://export.arxiv.org/*",
-    "https://api.semanticscholar.org/*",
-    "https://doi.org/api/*"
-  ],
 
   // Skill groups. Members must honour the idPrefix (the installer validates
   // this and fails loudly on violation).

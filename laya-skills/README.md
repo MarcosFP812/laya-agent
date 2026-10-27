@@ -12,10 +12,10 @@ Conventions:
 - No extra config needed: the canonical repository is cloned into the global
   skills directory (`~/.config/opencode/skills/laya`), which OpenCode scans
   automatically.
-- **Self-contained single files.** Laya has no filesystem access — it cannot
-  read a `references/` subdirectory or any companion file. Everything the
-  skill teaches must live inside its `SKILL.md`. (Shared skills under
-  `skills/` may use `references/`, because normal agents can read files.)
+- **Self-contained single files.** Everything the skill teaches must live
+  inside its `SKILL.md` — a portability convention, not a capability limit
+  (laya reads files like any full agent). Shared skills under `skills/` may
+  use `references/` subdirectories.
 - Every directory here must have exactly one entry in `manifest.jsonc` →
   `layaSkills`, and vice versa; the installer validates the sync and fails
   loudly on a mismatch.

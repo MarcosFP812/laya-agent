@@ -32,17 +32,15 @@ check must pass; if one fails, see the troubleshooting table in
 - Expect: the skill loads, the loop runs with real data, and laya can also
   see every other skill that was selected at install time.
 
-## 5. Webfetch gate (free scholarly APIs)
+## 5. Native toolset (full agent)
 
-- As the laya agent, fetch a real DOI record with `webfetch`, e.g.
-  `https://api.crossref.org/works/10.1145/3442188.3445922`.
-- Expect: HTTP 200 and JSON containing the paper's title.
-- If the install used the manifest's domain-scoped rules, also confirm that
-  a URL outside the allowlist (e.g. `https://example.com`) is **refused** —
-  laya's web access is API-only by design.
-- If the scoped rules do not work in your OpenCode build (the fetch is
-  blocked despite the allow rule), see the troubleshooting table: fall back
-  to a single unscoped `webfetch` allow and say so in the install report.
+- As the laya agent, run a trivial shell command, e.g. ask
+  "Ejecuta `echo ok` y dime qué devuelve".
+- Expect: the shell tool runs and returns `ok`.
+- Then ask for an arbitrary URL, e.g. "Descarga `https://example.com` con
+  webfetch".
+- Expect: the fetch proceeds normally — laya is a full OpenCode agent and
+  its web access is not domain-scoped.
 
 ## Optional CLI check
 

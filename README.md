@@ -2,9 +2,10 @@
 
 An OpenCode agent repository for our research group's LaTeX workflow.
 
-**Laya** is a ColTex-only OpenCode agent: it talks to the group's ColTex
-server (a collaborative LaTeX editor) through its MCP, and to nothing else.
-This repository is also an [OpenCode skill](./laya/SKILL.md) — an installing
+**Laya** is a full OpenCode agent for the group's LaTeX workflow: it manages
+the group's ColTex server (a collaborative LaTeX editor) through its MCP and
+has the complete native OpenCode toolset for everything else. This
+repository is also an [OpenCode skill](./laya/SKILL.md) — an installing
 agent loads it and follows it to set everything up.
 
 ## What is in here
@@ -67,9 +68,10 @@ is `manifest.jsonc` → `layaSkills`:
 | `laya-abstract` | Titles, abstracts and keywords within budgets, claims matching results | ask |
 | `laya-reproducibility` | Reproducibility statements from user-provided facts only | ask |
 
-External data comes only from free, key-less scholarly APIs; the allowed
-domains live in `manifest.jsonc` → `webfetchAllow` and become the agent's
-only webfetch permissions. Everything else about laya stays deny-all.
+The skills' external data comes from free, key-less scholarly APIs
+(Crossref, OpenAlex, arXiv, …) — that is the group's citation standard, not
+a capability limit: laya is a full OpenCode agent (shell, filesystem, web,
+subagents) like any other.
 
 ## What the installer touches in a project
 
@@ -123,10 +125,10 @@ up, and asks you to restart OpenCode. See
   skill). Other agents never see them. The installer also writes a global
   `laya-*` skill deny, so the globally cloned laya-only skills stay hidden
   even in projects without a laya config.
-- **Laya's web access is API-scoped**: the agent file allows `webfetch` only
-  to the free key-less scholarly API domains in the manifest; every other
-  URL is denied by the agent's own rules. The domain-scoped behavior is part
-  of the post-restart verification (gate 5).
+- **Laya is a full agent**: it has the complete native OpenCode toolset
+  (shell, filesystem, unrestricted webfetch/websearch, subagents). ColTex
+  tools and `laya-*` skills remain exclusive to it via the config denies
+  its own agent file re-allows (last matching rule wins).
 - The example URLs in this repo are placeholders. Ask the group for the real
   server address.
 

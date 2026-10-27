@@ -16,9 +16,9 @@
         "type": "remote",
         "url": "<COLTEX_BASE_URL>/api/mcp",
         "oauth": false,
-        // Tools must be plain direct calls (coltex_*). With Code Mode active
-        // (the default) MCP tools live behind the `execute` catalog, which a
-        // deny-all agent like laya can never reach.
+        // Tools stay plain direct calls (coltex_*), matching the direct-call
+        // loop the laya-coltex manual documents. With Code Mode active (the
+        // default) they would live behind the `execute` catalog instead.
         "codemode": false,
         "headers": {
           "Authorization": "Bearer {file:~/.config/opencode/laya-token}"
