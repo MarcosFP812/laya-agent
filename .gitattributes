@@ -1,0 +1,4 @@
+# Normalize line endings: keep LF in the repository and working tree.
+# The scripts here also run on Linux hosts, where CRLF breaks shebangs.
+* text=auto eol=lf
+*.png binary

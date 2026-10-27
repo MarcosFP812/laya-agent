@@ -1,0 +1,31 @@
+// Annotated example of the fragment the installer merges into the target
+// OpenCode config (project `.opencode/opencode.jsonc` or the global one).
+// Placeholders: <COLTEX_BASE_URL> and <REPO_DIR>.
+//
+// The token is NEVER written here — the header references the token file
+// through {file:...} substitution, so this fragment stays commit-safe.
+{
+  "mcp": {
+    "servers": {
+      "coltex": {
+        "type": "remote",
+        "url": "<COLTEX_BASE_URL>/api/mcp",
+        "oauth": false,
+        "headers": {
+          "Authorization": "Bearer {file:~/.config/opencode/laya-token}"
+        }
+      }
+    }
+  },
+
+  // Deny rules for laya-scoped resources. The laya agent re-allows them in
+  // its own definition (last matching rule wins), so only laya sees them.
+  "permissions": [
+    { "action": "coltex_*", "resource": "*", "effect": "deny" },
+    { "action": "skill", "resource": "laya-*", "effect": "deny" }
+  ],
+
+  // Skill sources. <REPO_DIR>/laya-skills is added whenever the repository
+  // is locally reachable; <REPO_DIR>/skills only once it contains a skill.
+  "skills": ["<REPO_DIR>/laya-skills"]
+}

@@ -1,0 +1,37 @@
+// Source of truth for every resource this repository manages.
+// The installer reads this file and derives config fragments and permission
+// rules from it. Keep it in sync with the actual directories.
+//
+// Paths are relative to the repository root (where this file lives).
+{
+  "agent": {
+    "id": "laya",
+    "template": "laya/references/agent-template.md"
+  },
+  "tokenFile": "~/.config/opencode/laya-token",
+
+  // The whole repository is registered as ONE OpenCode skill source
+  // ("skills": ["<repo>"]). The directory layout below IS the discovery
+  // mechanism:
+  //   laya/SKILL.md                    → installer skill, ID "laya"
+  //   laya-skills/laya-<id>/SKILL.md   → laya-only skill, ID "laya-<id>"
+  //   skills/<id>/SKILL.md             → shared skill, ID "<id>"
+
+  // MCP servers. scope "laya": usable only by the laya agent (a deny rule is
+  // added for everyone else). scope "todos": visible to every agent, and the
+  // laya agent gets an explicit allow rule (its deny-all would hide it).
+  "mcpServers": {
+    "coltex": {
+      "scope": "laya",
+      "toolPattern": "coltex_*",
+      "endpointPath": "/api/mcp"
+    }
+  },
+
+  // Skill groups. Members must honour the idPrefix (the installer validates
+  // this and fails loudly on violation).
+  "skillGroups": {
+    "layaOnly": { "directory": "laya-skills", "idPrefix": "laya-" },
+    "shared": { "directory": "skills", "idPrefix": "" }
+  }
+}
