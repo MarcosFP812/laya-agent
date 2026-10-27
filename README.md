@@ -84,7 +84,9 @@ up, and asks you to restart OpenCode. See
 - **Visibility is enforced by permissions**, not conventions alone:
   ColTex MCP tools (`coltex_*`) and `laya-*` skills are denied for every
   agent, and the `laya` agent's own rules re-allow them. Other agents never
-  see them.
+  see them. The installer also writes a global `laya-*` skill deny, so the
+  globally cloned laya-only skills stay hidden even in projects without a
+  laya config.
 - The example URLs in this repo are placeholders. Ask the group for the real
   server address.
 

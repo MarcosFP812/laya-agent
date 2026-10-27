@@ -19,6 +19,9 @@ check must pass; if one fails, see the troubleshooting table in `laya.md`.
 
 - Switch to another agent (e.g. `build`) and ask for the ColTex projects.
 - Expect: no `coltex_*` tool is available to it; it cannot comply.
+- Cross-project check (optional): from a session in a project WITHOUT the
+  laya config, the `laya-*` skills must not be advertised to any agent (the
+  global `laya-*` deny guards this).
 
 ## 4. The laya-only skill mechanism works
 

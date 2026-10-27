@@ -188,6 +188,22 @@ rewritten without them.
 `node <repo>/laya/scripts/merge-config.mjs verify --config <target-config>`
 and require exit 0. Also confirm the agent file exists and contains the URL.
 
+### 2.4 Global guard (project scope only)
+
+The global skill source exposes `laya-*` skills to every agent in every
+project, so the GLOBAL config must deny them (the laya agent re-allows them
+in its own definition; agent rules win over config rules). Merge this
+fragment into `~/.config/opencode/opencode.json(c)` — the script is
+idempotent:
+
+```json
+{ "permissions": [ { "action": "skill", "resource": "laya-*", "effect": "deny" } ] }
+```
+
+Skip this step when the install scope is global — the fragment from 2.3
+already lands in the global config. Confirm with
+`merge-config.mjs verify --config <global-config>`.
+
 ## Phase 3 — Report + restart request
 
 Print a table with every file written (path + one-line purpose), the probe
