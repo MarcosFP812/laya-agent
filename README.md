@@ -67,6 +67,7 @@ is `manifest.jsonc` → `layaSkills`:
 | `laya-figures` | Publication figures as pgfplots compiled by ColTex | ask |
 | `laya-abstract` | Titles, abstracts and keywords within budgets, claims matching results | ask |
 | `laya-reproducibility` | Reproducibility statements from user-provided facts only | ask |
+| `laya-skill-craft` | Create new skills or improve existing ones in this repository's format: intent capture, drafting, baseline-compared test prompts, feedback iteration, description tuning | ask |
 
 The skills' external data comes from free, key-less scholarly APIs
 (Crossref, OpenAlex, arXiv, …) — that is the group's citation standard, not

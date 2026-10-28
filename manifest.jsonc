@@ -91,6 +91,11 @@
       "install": "ask",
       "title": "Reproducibility statement",
       "summary": "Draft reproducibility statements and report gaps from facts the researcher provides; never invents numbers."
+    },
+    "laya-skill-craft": {
+      "install": "ask",
+      "title": "Skill creation and improvement",
+      "summary": "Create a new skill for laya from scratch or improve an existing one: intent capture, drafting in this repository's format, baseline-compared test runs, feedback iteration and description tuning."
     }
   }
 }
